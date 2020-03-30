@@ -1,6 +1,6 @@
 --------------------------------------------------------------------------------
 -- Company: 
--- Engineer:
+-- Engineer: Mariusz Wiśniewski
 --
 -- Create Date:   23:51:13 03/30/2020
 -- Design Name:   
@@ -54,14 +54,14 @@ ARCHITECTURE behavior OF clock_divider_tb IS
    signal clock_in : std_logic := '0';
    signal reset : std_logic := '0';
 
- 	--Outputs
+   --Outputs
    signal clock_out : std_logic;
    signal impulse : std_logic;
 
    -- Clock period definitions
    constant clock_in_period : time := 10 ns;
 	
-	constant system_speed: natural := 50e6;
+   constant system_speed: natural := 50e6;
  
 BEGIN
  
