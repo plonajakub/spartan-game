@@ -1,6 +1,6 @@
 --------------------------------------------------------------------------------
 -- Company: 
--- Engineer:
+-- Engineer: Mariusz Wiśniewski
 --
 -- Create Date:   23:51:13 03/30/2020
 -- Design Name:   
