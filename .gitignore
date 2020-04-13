@@ -65,6 +65,7 @@ xlnx_auto_0_xdb/
 xst/
 _ngo/
 _xmsgs/
+isim/
 
 # Simulation generated files
 xilinxsim.ini
