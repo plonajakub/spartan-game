@@ -65,3 +65,17 @@ xlnx_auto_0_xdb/
 xst/
 _ngo/
 _xmsgs/
+isim/
+
+# Simulation generated files
+fuse*
+xilinxsim.ini
+*.exe
+isim.cmd
+isim.log
+*.wdb
+*.jhd
+*.schlog
+*.sym
+*.vhf
+sch2HdlBatchFile
