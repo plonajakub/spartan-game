@@ -107,7 +107,7 @@ begin
 		end if;
 	end process;
 	
-	-- TODO convert to asci first (maybe in graphics module?)
+	-- TODO convert to ascii first (maybe in graphics module?)
 	video_data <= current_points;
 	
 	-- TODO choose next game and start it
