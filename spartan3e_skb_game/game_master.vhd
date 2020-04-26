@@ -3,102 +3,129 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
+use IEEE.NUMERIC_STD.ALL;
 
 -- Uncomment the following library declaration if instantiating
 -- any Xilinx primitives in this code.
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
+use game_master_constants.all;
+
 entity game_master is
-    Port ( game_clock : in  STD_LOGIC;
-			  start_game_signal : in STD_LOGIC;
-			  current_game_state : out STD_LOGIC_VECTOR (2 downto 0);
-			  
-			  -- data
-			  subgame_data : in  STD_LOGIC_VECTOR (7 downto 0);
-           subgame_data_ready : in  STD_LOGIC;
-           subgame_start_address : out  STD_LOGIC_VECTOR (1 downto 0);			  
-           subgame_start_command : out  STD_LOGIC;
-           video_data : out  STD_LOGIC_VECTOR (7 downto 0)		  
-			  );
+    port(
+		game_clock_i : in  STD_LOGIC;
+		start_game: in STD_LOGIC;
+		new_game : in STD_LOGIC;
+		reset_game : in STD_LOGIC;
+		game_state : out STD_LOGIC_VECTOR (2 downto 0);
+		game_clock_o : out STD_LOGIC;
+
+		-- data
+		subgame_data : in  STD_LOGIC_VECTOR (7 downto 0);
+		subgame_data_ready : in  STD_LOGIC;
+		subgame_address : out  STD_LOGIC_VECTOR (1 downto 0);			  
+		subgame_start : out  STD_LOGIC;
+		game_points : out  STD_LOGIC_VECTOR (7 downto 0)		  
+		);
 end game_master;
 
-architecture Behavioral of game_master is
 
-	component game_loop_state_machine is
-    Port ( next_state_signal : in  STD_LOGIC;
-           current_state_bus : out  STD_LOGIC_VECTOR (2 downto 0);
-           sync_reset : in  STD_LOGIC;
-           clock : in  STD_LOGIC);
+architecture Behavioral of game_master is
+		
+	component game_loop_sm is
+	port(
+		b_next_state : in STD_LOGIC_VECTOR(2 downto 0);
+        s_reset : in STD_LOGIC;
+        clock : in STD_LOGIC;
+		b_current_state : out STD_LOGIC_VECTOR (2 downto 0)
+		);
 	end component;
-	
-	component impulse_generator is
-    Port ( generate_impulse : in  STD_LOGIC;
-           clock : in  STD_LOGIC;
-			  reset : in STD_LOGIC;
-           impulse_out : out  STD_LOGIC);
-	end component;
-	
+		
 	component accumulator_8b_simple is
-	port(	clock: in STD_LOGIC;
-			clear: in STD_LOGIC;
-			sum_component: in STD_LOGIC_VECTOR(7 downto 0);
-			accumulator: out STD_LOGIC_VECTOR(7 downto 0));
+	port(
+		clock: in STD_LOGIC;
+		clear: in STD_LOGIC;
+		sum_component: in STD_LOGIC_VECTOR(7 downto 0);
+		accumulator: out STD_LOGIC_VECTOR(7 downto 0)
+		);
 	end component;
-	
 	
 	-- Game state machine
-	signal next_state_signal_i : STD_LOGIC := '0';
-	signal reset_state_machine : STD_LOGIC := '0';
-
-	-- Game state machine impulse
-	signal change_state_flag : STD_LOGIC := '0';
-	signal reset_state_machine_impulse : STD_LOGIC := '0';
+	signal i_b_next_state_sm : STD_LOGIC_VECTOR(2 downto 0) := "000";
+	signal i_s_reset_sm : STD_LOGIC := '0';
+	signal i_b_current_state_sm : STD_LOGIC_VECTOR(2 downto 0);
+	
+	-- Choose next game
+	signal last_subgame_finished : STD_LOGIC := '0';
+	signal next_game_address : UNSIGNED(1 downto 0) := "00";
+	signal i_subgame_start : STD_LOGIC := '0';
 	
 	-- Game points accumulator
 	signal reset_points : STD_LOGIC := '0';
 	signal points_to_add : STD_LOGIC_VECTOR(7 downto 0) := X"00";
 	signal current_points : STD_LOGIC_VECTOR(7 downto 0);
-	
+		
 begin
 
-	next_state_impulse: impulse_generator
-	port map (
-		generate_impulse => change_state_flag,
-		clock => game_clock,
-		reset => reset_state_machine_impulse,
-		impulse_out => next_state_signal_i
-	);
+	game_clock_o <= game_clock_i;
 
-	inner_state_machine: game_loop_state_machine 
+	inner_state_machine: game_loop_sm 
 	port map (
-		next_state_signal => next_state_signal_i,
-		current_state_bus => current_game_state,
-		sync_reset => reset_state_machine,
-		clock => game_clock
+		b_next_state => i_b_next_state_sm,
+		s_reset => i_s_reset_sm,
+		clock => game_clock_i,
+		b_current_state => i_b_current_state_sm
 	);
 	
-	change_state: process(game_clock, start_game_signal)
+	i_b_next_state_sm <= new_game & last_subgame_finished & start_game;
+	game_state <= i_b_current_state_sm;
+	i_s_reset_sm <= reset_game;
+		
+	choose_next_subgame: process(game_clock_i)
 	begin
-		if start_game_signal = '1' then
-			change_state_flag <= '1';
-			reset_state_machine_impulse <= '0';
-		else
-			change_state_flag <= '0';
-			reset_state_machine_impulse <= '1';
+		if rising_edge(game_clock_i) then
+			if i_b_current_state_sm = C_ST1_GAME_RUNNING_I then -- Initialization
+				next_game_address <= "00";
+				last_subgame_finished <= '0';
+				i_subgame_start <= '1';
+			elsif subgame_data_ready = '1' then -- Next subgame
+				if next_game_address = "10" then -- Game end
+					next_game_address <= "00";
+					last_subgame_finished <= '1';
+					i_subgame_start <= '0';
+				else
+					next_game_address <= next_game_address + 1;
+					last_subgame_finished <= '0';
+					i_subgame_start <= '1';
+				end if;
+			else
+				last_subgame_finished <= '0'; -- No action
+				i_subgame_start <= '0';
+			end if;
 		end if;
 	end process;
 	
+	start_next_subgame: process(i_subgame_start)
+	begin
+		if i_subgame_start = '1' then
+			subgame_start <= '1';
+		else
+			subgame_start <= '0';
+		end if;
+	end process;
+	
+	subgame_address <= STD_LOGIC_VECTOR(next_game_address);
+	
 	points_accumulator: accumulator_8b_simple
 	port map (
-		clock => game_clock,
+		clock => game_clock_i,
 		clear => reset_points,
 		sum_component => points_to_add,
 		accumulator => current_points
 	);
 	
-	collect_subgame_data: process(game_clock, subgame_data_ready)
+	collect_subgame_data: process(subgame_data_ready, subgame_data)
 	begin
 		if subgame_data_ready = '1' then
 			points_to_add <= subgame_data;
@@ -107,10 +134,16 @@ begin
 		end if;
 	end process;
 	
-	-- TODO convert to asci first (maybe in graphics module?)
-	video_data <= current_points;
+	reset_current_points : process(i_b_current_state_sm)
+	begin
+		if i_b_current_state_sm = C_ST1_GAME_RUNNING_I then
+			reset_points <= '1';
+		else
+			reset_points <= '0';
+		end if;
+	end process;
 	
-	-- TODO choose next game and start it
+	game_points <= current_points; -- TODO convert to asci first (maybe in graphics module?)
 	
 end Behavioral;
 
