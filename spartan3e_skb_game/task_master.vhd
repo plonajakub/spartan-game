@@ -17,8 +17,7 @@ entity task_master is
 			 correct_answer : in STD_LOGIC_VECTOR (7 downto 0); -- loaded from DDR
 			 
 			 current_task_state : out STD_LOGIC_VECTOR (2 downto 0);
-			 answer_value : out STD_LOGIC;
-			 task_finished : out STD_LOGIC
+			 answer_value : out STD_LOGIC
 			 );
 end task_master;
 
