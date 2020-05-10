@@ -10,7 +10,7 @@ use IEEE.NUMERIC_STD.all;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-use game_master_constants.all;
+use work.game_master_constants.all;
 
 entity game_master is
   port(
@@ -106,15 +106,7 @@ begin
     end if;
   end process;
 
-  start_next_subgame : process(i_subgame_start)
-  begin
-    if i_subgame_start = '1' then
-      subgame_start <= '1';
-    else
-      subgame_start <= '0';
-    end if;
-  end process;
-
+  subgame_start   <= i_subgame_start;
   subgame_address <= std_logic_vector(next_game_address);
 
   points_accumulator : accumulator_8b_simple

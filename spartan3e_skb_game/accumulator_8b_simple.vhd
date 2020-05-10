@@ -11,10 +11,12 @@ use IEEE.NUMERIC_STD.all;
 --use UNISIM.VComponents.all;
 
 entity accumulator_8b_simple is
-  port(clock         : in  std_logic;
-       clear         : in  std_logic;
-       sum_component : in  std_logic_vector(7 downto 0);
-       accumulator   : out std_logic_vector(7 downto 0));
+  port(
+    clock         : in  std_logic;
+    clear         : in  std_logic;
+    sum_component : in  std_logic_vector(7 downto 0);
+    accumulator   : out std_logic_vector(7 downto 0)
+    );
 end accumulator_8b_simple;
 
 architecture Behavioral of accumulator_8b_simple is
