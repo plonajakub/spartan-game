@@ -9,7 +9,7 @@
 *.msd
 *.msk
 *.ncd
-#*.ngc
+*.ngc
 *.ngd
 *.ngr
 *.pad
@@ -76,6 +76,6 @@ isim.log
 *.wdb
 *.jhd
 *.schlog
-#*.sym
+*.sym
 *.vhf
 sch2HdlBatchFile
