@@ -1,7 +1,0 @@
-[Inputs]
-next_state_signal
-sync_reset
-clock
-[Outputs]
-=current_state_bus[2:0]=
-[BiDir]
