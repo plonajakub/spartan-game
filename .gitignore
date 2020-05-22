@@ -79,3 +79,6 @@ isim.log
 *.sym
 *.vhf
 sch2HdlBatchFile
+
+# ISE project config - update manualy
+*.xise
