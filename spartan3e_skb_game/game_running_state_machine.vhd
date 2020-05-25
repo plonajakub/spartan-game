@@ -10,21 +10,22 @@ use IEEE.STD_LOGIC_1164.all;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
+use work.task_master_constants.all;
+
 entity game_running_state_machine is
-  port (next_state_signal : in  std_logic;
-        current_state_bus : out std_logic_vector (2 downto 0);
-        sync_reset        : in  std_logic;
-        clock             : in  std_logic);
+  port (b_next_state    : in  std_logic_vector (2 downto 0);
+        b_current_state : out std_logic_vector (2 downto 0);
+        sync_reset      : in  std_logic;
+        clock           : in  std_logic);
 end game_running_state_machine;
 
 architecture Behavioral of game_running_state_machine is
 
-  type task_state is (st0_load_task,
-                      st1_task_loaded,      --impulse
+  type task_state is (st0_wait_for_start,
+                      st1_task_loaded_i,
                       st2_wait_for_input,
-                      st3_input_received,   --impulse
-                      st4_resolve_input,
-                      st5_input_resolved);  --impulse
+                      st3_input_resolved_i,
+                      st4_end_task_i);
 
   signal state, next_state : task_state;
 
@@ -34,55 +35,41 @@ begin
   begin
     if rising_edge(clock) then
       if sync_reset = '1' then
-        state <= st0_load_task;
+        state <= st0_wait_for_start;
       else
         state <= next_state;
       end if;
     end if;
   end process;
 
-  OUTPUT_DECODE : process (state)
-  begin
-    if state = st0_load_task then
-      current_state_bus <= "000";
-    elsif state = st1_task_loaded then
-      current_state_bus <= "001";
-    elsif state = st2_wait_for_input then
-      current_state_bus <= "010";
-    elsif state = st3_input_received then
-      current_state_bus <= "011";
-    elsif state = st4_resolve_input then
-      current_state_bus <= "100";
-    elsif state = st5_input_resolved then
-      current_state_bus <= "101";
-    else
-      current_state_bus <= "XXX";
-    end if;
-  end process;
-
-  NEXT_STATE_DECODE : process (state, next_state_signal)
+  NEXT_STATE_DECODE : process (state, b_next_state)
   begin
     next_state <= state;
     case (state) is
-      when st0_load_task =>
-        if next_state_signal = '1' then
-          next_state <= st1_task_loaded;
+      when st0_wait_for_start =>
+        if b_next_state = C_ST1_TASK_LOADED_I then
+          next_state <= st1_task_loaded_i;
         end if;
-      when st1_task_loaded =>
+      when st1_task_loaded_i =>
         next_state <= st2_wait_for_input;
       when st2_wait_for_input =>
-        if next_state_signal = '1' then
-          next_state <= st3_input_received;
+        if b_next_state = C_ST3_INPUT_RESOLVED_I then
+          next_state <= st3_input_resolved_i;
         end if;
-      when st3_input_received =>
-        next_state <= st4_resolve_input;
-      when st4_resolve_input =>
-        if next_state_signal = '1' then
-          next_state <= st5_input_resolved;
+      when st3_input_resolved_i =>
+        next_state <= st4_end_task_i;
+      when st4_end_task_i =>
+        if b_next_state = C_ST0_WAIT_FOR_START then
+          next_state <= st1_task_loaded_i;
         end if;
-      when st5_input_resolved =>
-        next_state <= st0_load_task;
     end case;
   end process;
+
+  b_current_state <= C_ST0_WAIT_FOR_START when state = st0_wait_for_start else
+                     C_ST1_TASK_LOADED_I    when state = st1_task_loaded_i else
+                     C_ST2_WAIT_FOR_INPUT   when state = st2_wait_for_input else
+                     C_ST3_INPUT_RESOLVED_I when state = st3_input_resolved_i else
+                     C_ST4_END_TASK_I       when state = st4_end_task_i else
+                     "XXX";
 
 end Behavioral;

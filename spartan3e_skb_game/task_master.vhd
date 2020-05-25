@@ -60,7 +60,6 @@ architecture Behavioral of task_master is
 -- Choose next task
   signal s_current_task_number : unsigned(2 downto 0) := "000";
   signal last_task_finished    : std_logic            := '0';
-  signal i_task_start          : std_logic            := '0';
 
   -- Game points accumulator
   signal reset_points     : std_logic                    := '0';
@@ -94,27 +93,24 @@ begin
       if i_b_current_state_sm = C_ST1_TASK_LOADED_I then
         last_task_finished <= '0';
         i_b_next_state_sm  <= C_ST2_WAIT_FOR_INPUT;
-        i_task_start       <= '1';
       elsif i_b_current_state_sm = C_ST3_INPUT_RESOLVED_I then
         if s_current_task_number = C_NUMBER_OF_TASKS then
+          i_b_next_state_sm     <= C_ST0_WAIT_FOR_START;
           s_current_task_number <= "000";
           last_task_finished    <= '1';
-          i_task_start          <= '0';
         else
           s_current_task_number <= s_current_task_number + 1;
           last_task_finished    <= '0';
-          i_task_start          <= '1';
         end if;
       else
         last_task_finished <= '0';
-        i_task_start       <= '0';
       end if;
     end if;
   end process;
 
-  initialize_task : process(start_task_i)  -- TODO: Uruchamiac na maszynie stanow
+  initialize_task : process(start_task_i)
   begin
-    if start_task_i = '1' then  -- TODO: lepiej uzyc impulsu z maszyny stanow, ktora trzeba troche zmodyfikowac
+    if start_task_i = '1' then
       i_s_reset_sm          <= '1';
       s_current_task_number <= "001";
     else

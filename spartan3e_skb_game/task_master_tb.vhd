@@ -149,10 +149,11 @@ begin
     wait for clock_period * 2;
 
     start_task_i             <= '0';
-    coded_answer             <= (others => '0');
-    correct_answer           <= (others => '0');
+    wait for clock_period * 2;
+    -- coded_answer             <= (others => '0');
+    -- correct_answer           <= (others => '0');
     current_task_description <= X"01";
-    wait for clock_period * 4;
+    wait for clock_period * 2;
 
 
     wait;
