@@ -65,8 +65,6 @@ architecture behavior of task_master_tb is
   signal task_points         : std_logic_vector(7 downto 0);
   signal current_task_number : unsigned (2 downto 0);
   signal task_finished       : std_logic;
-  -- No clocks detected in port list. Replace <clock> below with
-  -- appropriate port name
 
   constant clock_period : time := 10 ns;
 
@@ -198,7 +196,7 @@ begin
     wait for clock_period * 2;
 
     -- TEST
-    -- simulate all five questions answered correctly
+    -- simulate all five questions again 
     -- FIRST TASK
 
     start_task_i             <= '0';
