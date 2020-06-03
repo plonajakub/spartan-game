@@ -21,10 +21,14 @@ end game_running_state_machine;
 
 architecture Behavioral of game_running_state_machine is
 
+  constant C_START_TASK              : std_logic_vector(2 downto 0) := "001";
+  constant C_KEYBOARD_BUTTON_PRESSED : std_logic_vector(2 downto 0) := "010";
+  constant C_TASK_ENDED              : std_logic_vector(2 downto 0) := "100";
+
   type task_state is (st0_wait_for_start,
                       st1_task_loaded_i,
                       st2_wait_for_input,
-                      st3_input_resolved_i,
+                      st3_input_received_i,
                       st4_end_task_i);
 
   signal state, next_state : task_state;
@@ -47,20 +51,24 @@ begin
     next_state <= state;
     case (state) is
       when st0_wait_for_start =>
-        if b_next_state = C_ST1_TASK_LOADED_I then
+        if b_next_state = C_START_TASK then
           next_state <= st1_task_loaded_i;
         end if;
       when st1_task_loaded_i =>
         next_state <= st2_wait_for_input;
       when st2_wait_for_input =>
-        if b_next_state = C_ST3_INPUT_RESOLVED_I then
-          next_state <= st3_input_resolved_i;
+        if b_next_state = C_KEYBOARD_BUTTON_PRESSED then
+          next_state <= st3_input_received_i;
         end if;
-      when st3_input_resolved_i =>
-        next_state <= st4_end_task_i;
+      when st3_input_received_i =>
+        if b_next_state = C_TASK_ENDED then
+          next_state <= st4_end_task_i;
+        else
+          next_state <= st1_task_loaded_i;
+        end if;
       when st4_end_task_i =>
         if b_next_state = C_ST0_WAIT_FOR_START then
-          next_state <= st1_task_loaded_i;
+          next_state <= st0_wait_for_start;
         end if;
     end case;
   end process;
@@ -68,7 +76,7 @@ begin
   b_current_state <= C_ST0_WAIT_FOR_START when state = st0_wait_for_start else
                      C_ST1_TASK_LOADED_I    when state = st1_task_loaded_i else
                      C_ST2_WAIT_FOR_INPUT   when state = st2_wait_for_input else
-                     C_ST3_INPUT_RESOLVED_I when state = st3_input_resolved_i else
+                     C_ST3_INPUT_RECEIVED_I when state = st3_input_received_i else
                      C_ST4_END_TASK_I       when state = st4_end_task_i else
                      "XXX";
 

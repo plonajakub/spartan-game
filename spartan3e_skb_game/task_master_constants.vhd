@@ -18,7 +18,7 @@ package task_master_constants is
   constant C_ST0_WAIT_FOR_START   : std_logic_vector(2 downto 0) := "000";
   constant C_ST1_TASK_LOADED_I    : std_logic_vector(2 downto 0) := "001";
   constant C_ST2_WAIT_FOR_INPUT   : std_logic_vector(2 downto 0) := "010";
-  constant C_ST3_INPUT_RESOLVED_I : std_logic_vector(2 downto 0) := "011";
+  constant C_ST3_INPUT_RECEIVED_I : std_logic_vector(2 downto 0) := "011";
   constant C_ST4_END_TASK_I       : std_logic_vector(2 downto 0) := "100";
 
   -- Tasks encoding
