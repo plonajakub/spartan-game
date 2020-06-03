@@ -10,16 +10,19 @@ use IEEE.NUMERIC_STD.all;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
+use IEEE.math_real.all;
+
 use work.graphics_constants.all;
 use work.graphic_controller_constants.all;
 
 entity graphic_controller is
   port (
     clock               : in  std_logic;
+    command_rdy         : in  std_logic;
     command             : in  graphic_controller_command_type;  -- **impulse**
-    graphics_id         : in  std_logic_vector (7 downto 0);
-    graphics_position_y : in  std_logic_vector (4 downto 0);
-    graphics_position_x : in  std_logic_vector (5 downto 0);
+    graphics_id         : in  integer;
+    graphics_position_y : in  integer;  -- row idx
+    graphics_position_x : in  integer;  -- col idx
     ascii_to_write      : in  std_logic_vector (7 downto 0);
     ascii_out           : out std_logic_vector (7 downto 0)  -- for VGAtxt module
     );
@@ -28,38 +31,41 @@ end graphic_controller;
 architecture Behavioral of graphic_controller is
 
   -- Current graphics state
-  signal cur_gr_hooks               : vectors2         := gr_hooks;
-  signal cur_graphic_elements_index : graphic_elements := graphic_elements_index;
-  signal cur_gr_visible             : bool_array       := gr_visible;
+  constant GIRAM_ADDR_WIDTH : integer := integer(ceil(log2(real(N_GRAPHIC_ELEMENTS * N_SCN_ROW * N_SCN_COL))));
+  constant GIRAM_DATA_WIDTH : integer := 8;
+  type graphic_elements_index_ram_type is array(2 ** GIRAM_ADDR_WIDTH - 1 downto 0) of std_logic_vector(GIRAM_DATA_WIDTH - 1 downto 0);
+
+  signal graphic_elements_index_ram : graphic_elements_index_ram_type := (others => X"00");
+  signal cur_gr_visible             : bool_array                      := gr_visible;
 
   signal cur_el  : integer := 0;
   signal cur_row : integer := 0;
   signal cur_col : integer := 0;
 
-  constant VRAM_WIDTH : integer := 10;
-  constant DATA_WIDTH : integer := 8;
-  type vram_type is array (2 ** VRAM_WIDTH - 1 downto 0) of std_logic_vector (DATA_WIDTH - 1 downto 0);
-  signal vram         : vram_type;
+  constant VRAM_ADDR_WIDTH : integer := integer(ceil(log2(real(N_SCN_ROW * N_SCN_COL))));
+  constant VRAM_DATA_WIDTH : integer := 8;
+  type vram_type is array (2 ** VRAM_ADDR_WIDTH - 1 downto 0) of std_logic_vector (VRAM_DATA_WIDTH - 1 downto 0);
+
+  signal vram : vram_type := (others => X"00");
 
 begin
 
-  decode_command : process(command, ascii_to_write)
+  decode_command : process(clock, command, ascii_to_write)
   begin
-    if command = CMD_MOVE then
-      null;
-    elsif command = CMD_PLACE then
-      cur_graphic_elements_index
-        (to_integer(unsigned(graphics_id)))
-        (to_integer(unsigned(graphics_position_y)))
-        (to_integer(unsigned(graphics_position_x)))
-        <= ascii_to_write;
-
-    elsif command = CMD_SHOW then
-      cur_gr_visible(to_integer(unsigned(graphics_id))) <= '1';
-    elsif command = CMD_HIDE then
-      cur_gr_visible(to_integer(unsigned(graphics_id))) <= '0';
-    else
-      null;
+    if rising_edge(clock) then
+      if command_rdy = '1' then
+        if command = CMD_MOVE then
+          null;
+        elsif command = CMD_PLACE then
+          graphic_elements_index_ram(ridx(graphics_id, graphics_position_y, graphics_position_x)) <= ascii_to_write;
+        elsif command = CMD_SHOW then
+          cur_gr_visible(graphics_id) <= '1';
+        elsif command = CMD_HIDE then
+          cur_gr_visible(graphics_id) <= '0';
+        else
+          null;
+        end if;
+      end if;
     end if;
   end process;
 
@@ -89,16 +95,18 @@ begin
 
   -- Assign each ascii denoted by screen_refresh_counter process
 
-  update_vram : process(cur_el, cur_row, cur_col)
+  update_vram : process(clock, cur_el, cur_row, cur_col)
   begin
-    if cur_gr_visible(cur_el) = '1' then
-      vram(N_SCN_COL * cur_row + cur_col) <= graphic_elements_index(cur_el)(cur_row)(cur_col);
-    else
-      vram(N_SCN_COL * cur_row + cur_col) <= X"00";
+    if rising_edge(clock) then
+      if cur_gr_visible(cur_el) = '1' and graphic_elements_index_ram(ridx(cur_el, cur_row, cur_col)) /= X"00" then
+        vram(N_SCN_COL * cur_row + cur_col) <= graphic_elements_index_ram(ridx(cur_el, cur_row, cur_col));
+      else
+        vram(N_SCN_COL * cur_row + cur_col) <= X"00";
+      end if;
     end if;
   end process;
 
 
-  ascii_out <= graphic_elements_index(cur_el)(cur_row)(cur_col);
+  ascii_out <= vram(N_SCN_COL * cur_row + cur_col);
 
 end Behavioral;

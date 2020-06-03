@@ -1,6 +1,8 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 
+use IEEE.math_real.all;
+
 package graphics_constants is
 
   -- Capital letters
@@ -69,14 +71,11 @@ package graphics_constants is
   constant N_SCN_ROW : integer := 20;
   constant N_SCN_COL : integer := 48;
 
+  constant N_GRAPHIC_FIELDS : integer := N_GRAPHIC_ELEMENTS * N_SCN_ROW * N_SCN_COL;
+
   -- IDs
   constant GR_ID_CLEAR_SCREEN : integer := 0;
   constant GR_ID_SCORE        : integer := 1;
-
-  -- Screen hooks (probably do **not** needed)
-  type vectors2 is array(0 to N_GRAPHIC_ELEMENTS - 1, 0 to 1) of integer;
-  constant gr_hooks : vectors2 := ((0, 0),  -- (row, col)
-                                   (1, 3));
 
 
   subtype ascii is std_logic_vector(7 downto 0);
@@ -86,7 +85,7 @@ package graphics_constants is
   subtype screen_matrix is screen_row_vector(0 to N_SCN_ROW - 1);
   type graphic_element_vector is array(natural range <>) of screen_matrix;
   subtype graphic_elements is graphic_element_vector(0 to N_GRAPHIC_ELEMENTS - 1);
-  -- type graphic_elements is array(0 to N_GRAPHIC_ELEMENTS - 1, 0 to N_SCN_ROW - 1, 0 to N_SCN_COL - 1) of std_logic_vector(7 downto 0);
+
   constant graphic_elements_index : graphic_elements := (0 =>
                                                          (others => (others => X"00")),
                                                          1 =>
@@ -95,13 +94,26 @@ package graphics_constants is
 
 
   -- Starting visibility
-  type bool_array is array (0 to N_GRAPHIC_ELEMENTS - 1) of std_logic;
+  constant GVIRAM_ADDR_WIDTH : integer := integer(ceil(log2(real(N_GRAPHIC_ELEMENTS))));
+  type bool_array is array (2 ** GVIRAM_ADDR_WIDTH - 1 downto 0) of std_logic;
   constant gr_visible : bool_array := ('1',
                                        '1');
 
-
+  function ridx
+    (el_idx  : integer;
+     row_idx : integer;
+     col_idx : integer) return integer;
 
 end graphics_constants;
 
 package body graphics_constants is
+
+  function ridx (el_idx  : integer;
+                 row_idx : integer;
+                 col_idx : integer)
+    return integer is
+  begin
+    return N_SCN_ROW * N_SCN_COL * el_idx + N_SCN_COL * row_idx + col_idx;
+  end ridx;
+
 end graphics_constants;
