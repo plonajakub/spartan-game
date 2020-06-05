@@ -9,6 +9,10 @@ package graphic_controller_constants is
   constant CMD_SHOW  : graphic_controller_command_type := "010";
   constant CMD_HIDE  : graphic_controller_command_type := "011";
 
+  -- graphic_controller_sm states
+  constant GET_GR_EL_ID : std_logic := '0';
+  constant WRITE_GR_EL  : std_logic := '1';
+
 end graphic_controller_constants;
 
 package body graphic_controller_constants is

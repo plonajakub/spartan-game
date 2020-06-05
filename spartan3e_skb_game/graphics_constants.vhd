@@ -61,13 +61,14 @@ package graphics_constants is
   constant z : std_logic_vector(7 downto 0) := X"7A";
 
   -- Number of stored graphic elements
-  constant N_GRAPHIC_ELEMENTS : natural := 2;
+  constant N_GRAPHIC_ELEMENTS : natural := 3;
 
   -- Screen parameters
   constant N_SCN_ROW : natural := 20;
   constant N_SCN_COL : natural := 48;
 
-  type GR_ELEMENT_REP_TYPE is array (0 to N_SCN_COL - 1) of std_logic_vector(7 downto 0);
+  constant GR_ELEMENT_MAX_REP_LEN : natural := 5;
+  type GR_ELEMENT_REP_TYPE is array (0 to GR_ELEMENT_MAX_REP_LEN - 1) of std_logic_vector(7 downto 0);
   type GR_ELEMENT_POS_TYPE is array (0 to 1) of natural;
 
   -- Graphic elements
@@ -81,21 +82,36 @@ package graphics_constants is
   constant GR_SCORE_POS : GR_ELEMENT_POS_TYPE := (0, 9);
   constant GR_SCORE_REP : GR_ELEMENT_REP_TYPE := (cS, c, o, r, e, others => X"00");
 
+  constant GR_NSCORE_ID  : natural             := 2;
+  constant GR_NSCORE_LEN : natural             := 2;
+  constant GR_NSCORE_POS : GR_ELEMENT_POS_TYPE := (0, 15);
+  constant GR_NSCORE_REP : GR_ELEMENT_REP_TYPE := (X"30", X"30", others => X"00");
+
   -- Starting visibility
   subtype GR_IS_VISIBLE_TYPE is std_logic_vector(0 to N_GRAPHIC_ELEMENTS - 1);
-  constant GR_IS_VISIBLE : GR_IS_VISIBLE_TYPE := ('1', '1');
+  constant GR_IS_VISIBLE : GR_IS_VISIBLE_TYPE := (GR_TIME_ID   => '1',
+                                                  GR_SCORE_ID  => '1',
+                                                  GR_NSCORE_ID => '1');
 
   -- Convenient containers
   type GR_LEN_ARR_TYPE is array (0 to N_GRAPHIC_ELEMENTS - 1) of natural;
-  constant GR_LEN_ARR : GR_LEN_ARR_TYPE := (GR_TIME_ID => GR_TIME_LEN, GR_SCORE_ID => GR_SCORE_LEN);
+  constant GR_LEN_ARR : GR_LEN_ARR_TYPE := (GR_TIME_ID   => GR_TIME_LEN,
+                                            GR_SCORE_ID  => GR_SCORE_LEN,
+                                            GR_NSCORE_ID => GR_NSCORE_LEN);
 
   type GR_POS_ARR_TYPE is array (0 to N_GRAPHIC_ELEMENTS - 1) of GR_ELEMENT_POS_TYPE;
-  constant GR_POS_ARR : GR_POS_ARR_TYPE := (GR_TIME_ID => GR_TIME_POS, GR_SCORE_ID => GR_SCORE_POS);
+  constant GR_POS_ARR : GR_POS_ARR_TYPE := (GR_TIME_ID   => GR_TIME_POS,
+                                            GR_SCORE_ID  => GR_SCORE_POS,
+                                            GR_NSCORE_ID => GR_NSCORE_POS);
 
   type GR_REP_ARR_TYPE is array (0 to N_GRAPHIC_ELEMENTS - 1) of GR_ELEMENT_REP_TYPE;
-  constant GR_REP_ARR : GR_REP_ARR_TYPE := (GR_TIME_ID => GR_TIME_REP, GR_SCORE_ID => GR_SCORE_REP);
+  constant GR_REP_ARR : GR_REP_ARR_TYPE := (GR_TIME_ID   => GR_TIME_REP,
+                                            GR_SCORE_ID  => GR_SCORE_REP,
+                                            GR_NSCORE_ID => GR_NSCORE_REP);
 
-  function sidx (row_idx : natural; col_idx : natural) return natural;
+  function sidx (row_idx   : natural; col_idx : natural) return natural;
+  function soidx (row_idx  : natural; col_idx : natural; offset : natural) return natural;
+  function roidx (gr_el_id : natural; offset : natural) return natural;
 
 end graphics_constants;
 
@@ -103,9 +119,22 @@ end graphics_constants;
 
 package body graphics_constants is
 
+  -- vram index
   function sidx (row_idx : natural; col_idx : natural) return natural is
   begin
     return N_SCN_COL * row_idx + col_idx;
   end sidx;
+
+  -- vram index + offset
+  function soidx (row_idx : natural; col_idx : natural; offset : natural) return natural is
+  begin
+    return N_SCN_COL * row_idx + col_idx + offset;
+  end soidx;
+
+  -- ram_gr_rep index + offset
+  function roidx (gr_el_id : natural; offset : natural) return natural is
+  begin
+    return GR_ELEMENT_MAX_REP_LEN * gr_el_id + offset;
+  end roidx;
 
 end graphics_constants;
