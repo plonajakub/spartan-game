@@ -1,5 +1,6 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
+use IEEE.NUMERIC_STD.all;
 
 package graphics_constants is
 
@@ -113,6 +114,8 @@ package graphics_constants is
   function soidx (row_idx  : natural; col_idx : natural; offset : natural) return natural;
   function roidx (gr_el_id : natural; offset : natural) return natural;
 
+  function HB2ASCII_HEX (half_byte : std_logic_vector) return std_logic_vector;
+
 end graphics_constants;
 
 --------------------------------------------------------------------------------
@@ -136,5 +139,14 @@ package body graphics_constants is
   begin
     return GR_ELEMENT_MAX_REP_LEN * gr_el_id + offset;
   end roidx;
+
+  function HB2ASCII_HEX (half_byte : std_logic_vector) return std_logic_vector is
+  begin
+    if to_integer(unsigned(half_byte)) < 10 then
+      return std_logic_vector(to_unsigned(to_integer(unsigned(half_byte)) + 48, 8));
+    else
+      return std_logic_vector(to_unsigned(to_integer(unsigned(half_byte)) + 55, 8));  -- num - 10 + 65: upper case letters in ASCII
+    end if;
+  end HB2ASCII_HEX;
 
 end graphics_constants;
