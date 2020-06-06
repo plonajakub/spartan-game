@@ -13,6 +13,10 @@ package graphic_controller_constants is
   constant GET_GR_EL_ID : std_logic := '0';
   constant WRITE_GR_EL  : std_logic := '1';
 
+  -- graphic_controller_place_cmd_sm states
+  constant WAIT_FOR_ELEMENT : std_logic := '0';
+  constant WRITE_ELEMENT    : std_logic := '1';
+
 end graphic_controller_constants;
 
 package body graphic_controller_constants is

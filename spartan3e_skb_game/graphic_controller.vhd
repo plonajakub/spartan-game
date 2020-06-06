@@ -8,13 +8,14 @@ use work.graphic_controller_constants.all;
 entity graphic_controller is
   port (
     clock           : in  std_logic;
-    command_rdy     : in  std_logic;                     -- **impulse**
+    command_rdy     : in  std_logic;                      -- **impulse**
     command         : in  graphic_controller_command_type;
     in_gr_id        : in  natural;
     in_gr_row_idx   : in  natural;
     in_gr_col_idx   : in  natural;
     string_to_write : in  GR_ELEMENT_REP_TYPE;
-    ascii_out       : out std_logic_vector (7 downto 0)  -- for VGAtxt module
+    ascii_out       : out std_logic_vector (7 downto 0);  -- for VGAtxt module
+    busy            : out std_logic
     );
 end graphic_controller;
 
@@ -29,6 +30,17 @@ architecture Behavioral of graphic_controller is
       );
   end component graphic_controller_sm;
 
+  component graphic_controller_place_cmd_sm
+    port (
+      clock            : in  std_logic;
+      s_reset          : in  std_logic;
+      start_place      : in  std_logic;
+      gr_el_len        : in  natural;
+      cur_gr_el_offset : out natural;
+      write_state      : out std_logic
+      );
+  end component graphic_controller_place_cmd_sm;
+
 
   signal ram_gr_visible : GR_IS_VISIBLE_TYPE := GR_IS_VISIBLE;
   signal ram_gr_pos     : GR_POS_ARR_TYPE    := GR_POS_ARR;
@@ -39,7 +51,8 @@ architecture Behavioral of graphic_controller is
   signal ram_gr_rep : REP_RAM_TYPE := (
     GR_REP_ARR(0)(0), GR_REP_ARR(0)(1), GR_REP_ARR(0)(2), GR_REP_ARR(0)(3), GR_REP_ARR(0)(4),
     GR_REP_ARR(1)(0), GR_REP_ARR(1)(1), GR_REP_ARR(1)(2), GR_REP_ARR(1)(3), GR_REP_ARR(1)(4),
-    GR_REP_ARR(2)(0), GR_REP_ARR(2)(1), GR_REP_ARR(2)(2), GR_REP_ARR(2)(3), GR_REP_ARR(2)(4)
+    GR_REP_ARR(2)(0), GR_REP_ARR(2)(1), GR_REP_ARR(2)(2), GR_REP_ARR(2)(3), GR_REP_ARR(2)(4),
+    others => X"00"
     );
 
   -- Video RAM
@@ -61,6 +74,13 @@ architecture Behavioral of graphic_controller is
   signal cur_gr_el_id         : natural := N_GRAPHIC_ELEMENTS - 1;
   signal cur_gr_el_pos_offset : natural := 0;
 
+  -- grahpic_controller_place_cmd_sm cache
+  signal i_s_place_sm_reset : std_logic := '0';
+  signal start_place        : std_logic := '0';
+  signal gr_el_len          : natural   := 0;
+  signal cur_place_offset   : natural;
+  signal place_cmd_state    : std_logic;
+
 begin
 
   graphic_controller_sm_i : graphic_controller_sm
@@ -71,6 +91,16 @@ begin
       cur_screen_write_stage  => i_cur_screen_write_stage
       );
 
+  graphic_controller_place_cmd_sm_i : graphic_controller_place_cmd_sm
+    port map (
+      clock            => clock,
+      s_reset          => i_s_place_sm_reset,
+      start_place      => start_place,
+      gr_el_len        => gr_el_len,
+      cur_gr_el_offset => cur_place_offset,
+      write_state      => place_cmd_state
+      );
+
   decode_command : process(clock, command_rdy)
   begin
     if rising_edge(clock) then
@@ -79,7 +109,7 @@ begin
           ram_gr_pos(in_gr_id)(0) <= in_gr_row_idx;
           ram_gr_pos(in_gr_id)(1) <= in_gr_col_idx;
         elsif command = CMD_PLACE then
-          ram_gr_rep(roidx(in_gr_id, 0)) <= string_to_write(0);  -- TODO write n elements (not only one as here)
+          start_place <= '1';
         elsif command = CMD_SHOW then
           ram_gr_visible(in_gr_id) <= '1';
         elsif command = CMD_HIDE then
@@ -87,6 +117,22 @@ begin
         else
           null;
         end if;
+      else
+        start_place <= '0';
+      end if;
+    end if;
+  end process;
+
+  busy <= '1' when place_cmd_state = WRITE_ELEMENT else
+          '0';
+
+  gr_el_len <= GR_LEN_ARR(in_gr_id);
+
+  place_command : process(clock, cur_place_offset, place_cmd_state)
+  begin
+    if rising_edge(clock) then
+      if place_cmd_state = WRITE_ELEMENT then
+        ram_gr_rep(roidx(in_gr_id, cur_place_offset)) <= string_to_write(cur_place_offset);
       end if;
     end if;
   end process;
