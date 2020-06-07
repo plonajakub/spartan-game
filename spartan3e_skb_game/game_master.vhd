@@ -11,6 +11,7 @@ use IEEE.NUMERIC_STD.all;
 --use UNISIM.VComponents.all;
 
 use work.game_master_constants.all;
+use work.graphics_constants.all;
 
 entity game_master is
   port(
@@ -19,14 +20,13 @@ entity game_master is
     new_game     : in  std_logic;
     reset_game   : in  std_logic;
     game_state   : out std_logic_vector (2 downto 0);
-    game_clock_o : out std_logic;
 
     -- data
     subgame_data       : in  std_logic_vector (7 downto 0);
     subgame_data_ready : in  std_logic;
     subgame_address    : out std_logic_vector (1 downto 0);
     subgame_start      : out std_logic;
-    game_points        : out std_logic_vector (7 downto 0)
+    game_points        : out GR_ELEMENT_REP_TYPE
     );
 end game_master;
 
@@ -67,8 +67,6 @@ architecture Behavioral of game_master is
   signal current_points : std_logic_vector(7 downto 0);
 
 begin
-
-  game_clock_o <= game_clock_i;
 
   inner_state_machine : game_loop_sm
     port map (
@@ -135,6 +133,10 @@ begin
     end if;
   end process;
 
-  game_points <= current_points;  -- TODO convert to asci first (maybe in graphics module?)
+  game_points(0) <= HB2ASCII_HEX(current_points(7 downto 4));
+  game_points(1) <= HB2ASCII_HEX(current_points(3 downto 0));
+  game_points(2) <= X"00";
+  game_points(3) <= X"00";
+  game_points(4) <= X"00";
 
 end Behavioral;
