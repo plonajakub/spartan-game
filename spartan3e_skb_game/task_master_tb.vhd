@@ -196,7 +196,7 @@ begin
     wait for clock_period * 2;
 
     -- TEST
-    -- simulate all five questions again 
+    -- simulate all five questions again
     -- FIRST TASK
 
     start_task_i             <= '0';

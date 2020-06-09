@@ -22,7 +22,7 @@ use IEEE.STD_LOGIC_1164.all;
 use IEEE.NUMERIC_STD.all;
 
 entity clock_divider is
-  generic(clock_input_speed : integer := 1; clock_output_speed : integer := 2);
+  generic(clock_input_speed : integer := 1; clock_output_speed : integer := 1);
   port(
     clock_in  : in  std_logic;
     reset     : in  std_logic;
