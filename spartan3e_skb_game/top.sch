@@ -7,9 +7,6 @@
     </attr>
     <netlist>
         <signal name="Clk_50MHz" />
-        <signal name="XLXN_65" />
-        <signal name="XLXN_68" />
-        <signal name="XLXN_90" />
         <signal name="PS2_Clk" />
         <signal name="PS2_Data" />
         <signal name="XLXN_2(7:0)" />
@@ -18,8 +15,6 @@
         <signal name="start_game" />
         <signal name="new_game" />
         <signal name="reset_game" />
-        <signal name="XLXN_117" />
-        <signal name="XLXN_118(7:0)" />
         <signal name="XLXN_119" />
         <signal name="XLXN_127(7:0)" />
         <signal name="VGA_HS" />
@@ -28,7 +23,6 @@
         <signal name="VGA_R" />
         <signal name="VGA_G" />
         <signal name="VGA_B" />
-        <signal name="XLXN_140" />
         <port polarity="Input" name="Clk_50MHz" />
         <port polarity="Input" name="PS2_Clk" />
         <port polarity="Input" name="PS2_Data" />
@@ -41,7 +35,7 @@
         <port polarity="Output" name="VGA_G" />
         <port polarity="Output" name="VGA_B" />
         <blockdef name="keyboard_key_resolver">
-            <timestamp>2020-5-30T22:10:30</timestamp>
+            <timestamp>2020-6-12T20:7:42</timestamp>
             <rect width="256" x="64" y="-64" height="64" />
             <rect width="64" x="0" y="-44" height="24" />
             <line x2="0" y1="-32" y2="-32" x1="64" />
@@ -62,7 +56,7 @@
             <line x2="0" y1="-32" y2="-32" x1="64" />
         </blockdef>
         <blockdef name="clock_divider">
-            <timestamp>2020-5-30T22:10:46</timestamp>
+            <timestamp>2020-6-12T20:8:21</timestamp>
             <rect width="256" x="64" y="-128" height="128" />
             <line x2="0" y1="-96" y2="-96" x1="64" />
             <line x2="0" y1="-32" y2="-32" x1="64" />
@@ -97,7 +91,7 @@
             <line x2="64" y1="-64" y2="0" x1="64" />
         </blockdef>
         <blockdef name="game_core">
-            <timestamp>2020-6-12T17:42:26</timestamp>
+            <timestamp>2020-6-12T20:8:4</timestamp>
             <rect width="432" x="64" y="-448" height="448" />
             <line x2="0" y1="-416" y2="-416" x1="64" />
             <line x2="0" y1="-352" y2="-352" x1="64" />

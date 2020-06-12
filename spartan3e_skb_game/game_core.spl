@@ -1,0 +1,12 @@
+[Inputs]
+game_clock_i
+start_game
+new_game
+reset_game
+keyboard_data_received_i
+command_rdy
+=coded_answer[7:0]=
+[Outputs]
+busy
+=ascii_out[7:0]=
+[BiDir]
