@@ -41,11 +41,11 @@ architecture Behavioral of clock_divider is
     end if;
   end num_of_bits;
 
-  constant max_counter  : natural := (clock_input_speed / clock_output_speed) / 2;
+  constant max_counter  : natural := (clock_input_speed / clock_output_speed);
   constant counter_bits : natural := num_of_bits(max_counter);
 
   signal counter           : unsigned(counter_bits - 1 downto 0) := (others => '0');
-  signal clock_signal      : std_logic                           := '0';
+  signal clock_signal      : std_logic                           := '1';
   signal impulse_signal    : std_logic                           := '0';
   signal iteration_counter : natural                             := 0;
 
@@ -62,17 +62,18 @@ begin
         counter      <= to_unsigned(0, counter_bits);
         clock_signal <= not clock_signal;
 
-        if iteration_counter = 0 then
-          impulse_signal <= '1';
+        if iteration_counter = max_counter * 2 then
+          impulse_signal    <= '1';
+          iteration_counter <= 0;
         else
           impulse_signal <= '0';
         end if;
 
-        iteration_counter <= iteration_counter + 1;
       else
         impulse_signal    <= '0';
-        iteration_counter <= 0;
         counter           <= counter + 1;
+        iteration_counter <= iteration_counter + 1;
+
       end if;
     end if;
   end process;

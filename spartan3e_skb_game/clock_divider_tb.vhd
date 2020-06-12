@@ -66,7 +66,7 @@ architecture behavior of clock_divider_tb is
 begin
 
   clock_10hz_generator : component clock_divider
-    generic map(clock_input_speed => system_speed, clock_output_speed => 10)
+    generic map(clock_input_speed => system_speed, clock_output_speed => 50)
     port map (
       clock_in  => clock_in,
       reset     => reset,
