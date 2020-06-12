@@ -10,9 +10,9 @@ entity graphic_controller is
     clock           : in  std_logic;
     command_rdy     : in  std_logic;                      -- **impulse**
     command         : in  graphic_controller_command_type;
-    in_gr_id        : in  integer;
-    in_gr_row_idx   : in  integer;
-    in_gr_col_idx   : in  integer;
+    in_gr_id        : in  natural;
+    in_gr_row_idx   : in  natural;
+    in_gr_col_idx   : in  natural;
     string_to_write : in  GR_ELEMENT_REP_TYPE;
     ascii_out       : out std_logic_vector (7 downto 0);  -- for VGAtxt module
     busy            : out std_logic

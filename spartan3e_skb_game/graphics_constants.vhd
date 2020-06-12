@@ -68,7 +68,7 @@ package graphics_constants is
   constant N_SCN_ROW : natural := 20;
   constant N_SCN_COL : natural := 48;
 
-  constant GR_ELEMENT_MAX_REP_LEN : integer := 5;
+  constant GR_ELEMENT_MAX_REP_LEN : natural := 5;
   type GR_ELEMENT_REP_TYPE is array (0 to GR_ELEMENT_MAX_REP_LEN - 1) of std_logic_vector(7 downto 0);
   type GR_ELEMENT_POS_TYPE is array (0 to 1) of natural;
 
