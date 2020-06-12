@@ -1,9 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
-
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
---USE ieee.numeric_std.ALL;
+use work.graphics_constants.all;
 
 entity game_master_tb is
 end game_master_tb;
@@ -19,12 +16,11 @@ architecture behavior of game_master_tb is
       new_game           : in  std_logic;
       reset_game         : in  std_logic;
       game_state         : out std_logic_vector(2 downto 0);
-      game_clock_o       : out std_logic;
       subgame_data       : in  std_logic_vector(7 downto 0);
       subgame_data_ready : in  std_logic;
       subgame_address    : out std_logic_vector(1 downto 0);
       subgame_start      : out std_logic;
-      game_points        : out std_logic_vector(7 downto 0)
+      game_points        : out GR_ELEMENT_REP_TYPE
       );
   end component;
 
@@ -39,12 +35,9 @@ architecture behavior of game_master_tb is
 
   --Outputs
   signal game_state      : std_logic_vector(2 downto 0);
-  signal game_clock_o    : std_logic;
   signal subgame_address : std_logic_vector(1 downto 0);
   signal subgame_start   : std_logic;
-  signal game_points     : std_logic_vector(7 downto 0);
-  -- No clocks detected in port list. Replace <clock> below with
-  -- appropriate port name
+  signal game_points     : GR_ELEMENT_REP_TYPE;
 
   constant clock_period : time := 10 ns;
 
@@ -57,7 +50,6 @@ begin
     new_game           => new_game,
     reset_game         => reset_game,
     game_state         => game_state,
-    game_clock_o       => game_clock_o,
     subgame_data       => subgame_data,
     subgame_data_ready => subgame_data_ready,
     subgame_address    => subgame_address,
